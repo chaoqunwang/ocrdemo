@@ -28,7 +28,7 @@
 		methods: {
 			gettoken() {
 				getToken().then(res => {
-					console.log("-=getToken====", res);
+					console.log("-=getToken==dd==", res);
 					this.access_token = res.access_token
 					this.getidCard()
 				});
