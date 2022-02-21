@@ -5,6 +5,8 @@ let url = {
 	//身份证识别
 
 	idCard:'rest/2.0/ocr/v1/idcard',
+	
+	bankcard:"rest/2.0/ocr/v1/bankcard"
 }
 
 module.exports = {
@@ -16,6 +18,15 @@ module.exports = {
 	getIdCard(params){
 		return httpRequest({
 			url:`${url.idCard}?access_token=${params.access_token}`,
+			data:params.data,
+			header:{
+				"Content-Type":"application/x-www-form-urlencoded"
+			}
+		})
+	},
+	getbankcard(params){
+		return httpRequest({
+			url:`${url.bankcard}?access_token=${params.access_token}`,
 			data:params.data,
 			header:{
 				"Content-Type":"application/x-www-form-urlencoded"

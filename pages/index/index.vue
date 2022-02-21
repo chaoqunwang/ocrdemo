@@ -1,17 +1,20 @@
 <template>
 	<view class="content">
-		<image class="logo" src="/static/logo.png"></image>
+		
+		<button type="default" @click="scan('back')">身份证国徽</button>
+		<button type="default" @click="scan">银行卡</button>
 		<view class="text-area">
 			<text class="title">{{title}}</text>
 		</view>
-		<button type="default"@click="scan">扫</button>
+
 	</view>
 </template>
 
 <script>
 	import {
 		getToken,
-		getIdCard
+		getIdCard,
+		getbankcard
 
 	} from '@/commom/api.js'
 	export default {
@@ -19,51 +22,79 @@
 			return {
 				title: 'Hello',
 				access_token: '',
-				image:''
+				image: ''
 			}
 		},
 		onLoad() {
-			// this.gettoken()
+			this.gettoken()
 		},
 		methods: {
 			gettoken() {
 				getToken().then(res => {
 					console.log("-=getToken==dd==", res);
 					this.access_token = res.access_token
-					this.getidCard()
+					
 				});
 			},
-		
-		
+
+
 			//-front：身份证含照片的一面 -back：身份证带国徽的一面
-			getidCard() {
+			getidCard(image) {
 				let params = {
-					image:this.image, 
+					
 					access_token: this.access_token,
-					id_card_side: 'back'
+					data:{
+						id_card_side: 'back',
+						image: image,
+					}
 				}
 				getIdCard(params).then(res => {
 					console.log("-=身份证====", res);
-					uni.showToast({
-						title:res
-					})
+					this.title=res
 				})
 			},
-			scan() {
+			getbankcard(image){
+				let params = {
+					access_token: this.access_token,
+					data:{
+						detect_direction: false,
+						image: image,
+					}
+				}
+				getbankcard(params).then(res => {
+					console.log("-=银行卡====", res);
+					this.title=res
+					
+				})
+			},
+			scan(type) {
 				const that = this
-				uni.scanCode({
-					success: function(result) {
-						that.image = result.result
-						console.log('成功', result.result)
-						uni.showToast({
-							title:that.image,
-							
-						})
-						that.gettoken()
-					},
-					fail: function(res) {
-						that.res = res
-						console.log(res)
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed'],
+					sourceType: ['album', 'camera'],
+					success: function(res) {
+						var tempFilePath = res.tempFilePaths[0];
+						that.tempFile = tempFilePath;
+						plus.io.resolveLocalFileSystemURL(that.tempFile, function(entry) {
+							entry.file(function(file) {
+								var fileReader = new plus.io.FileReader();
+								fileReader.readAsDataURL(file);
+								fileReader.onloadend = function(evt) {
+									console.log("==" + evt.target.result);
+									// that. = evt.target.result.split(",")[1]; // that.src=evt.target.result;
+									uni.showToast({
+										title: evt.target.result.split(",")[1]
+									});
+									
+									if(type=='back'){
+										that.getidCard(evt.target.result.split(",")[1]);
+									}else{
+										that.getbankcard(evt.target.result.split(",")[1])
+									}
+								};
+							});
+						});
 					}
 				})
 			},
